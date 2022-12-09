@@ -1,0 +1,108 @@
+# Default values for devops_demo.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+demo_app:
+  replicaCount: 3
+  image:
+    repository: ghcr.io/perceptolab/devops-demo-app #DevOps demo container image
+    pullPolicy: IfNotPresent
+
+  namespace: "default" # Change if you want to run in a diff. namespace
+  labels:
+    app: "demo_app" # Default label to select deployment
+  fullname: "devops-demo" 
+
+  service:
+    type: LoadBalancer 
+    port: 80
+    targetPort: 8080
+
+  configMap:
+    name: "demo-app-configs" # ConfigMap name for demoapp
+
+  secret:
+    name: "demo-app-secrets" # Secret name demoapp
+    
+  resources:
+    limits:
+      memory: "1Gi" # Change as needed
+    requests:
+      memory: "1Gi" # Change as needed
+  
+  autoscaling: 
+    enabled: False # Do not autoscale
+  imagePullSecrets: {}
+  podAnnotations: {}
+  selectorLabels: {}
+  serviceAccountName: {}
+  podSecurityContext: {}
+  
+#### POSTGRES CONFIG #####
+postgres:
+  
+  fullname: "postgresql-db"
+  serviceName: "postgres" # ServiceName for StatefulSet
+
+  namespace: "default" # Change as needed
+  replicaCount: 1 # only one instance, as per request
+  labels:
+    app: "postgres" # Label to select pod
+  image:
+    repository: postgres # postgres image
+    tag: latest # using latest
+    pullPolicy: IfNotPresent
+
+  configMap:
+    name: "postgres-configs" # ConfigMap name for postgres
+    data:
+      db_name: "test_db1" # What db is created, also sets demoapp DB_NAME var
+      pg_data: "/data/pgdata" # postgres data dir
+    
+
+  secret:
+    name: "postgres-secrets"
+    data:
+      db_user: "dGVzdF91c2Vy" # Postgres user, also sets demoapp DB_USER
+      db_master_password: "MCZBbmI1dDBvWWpnWHZOb3hZMkw=" # Postgress pass, also sets demoapp DB_PASS
+
+  fullname: "postgresql"
+
+  service:
+    type: NodePort
+    port: 5432
+    targetPort: 5432
+
+  volumeMount:
+    name: "postgres-db_vol" # VolumeMount to persist database data, change as needed
+  resources:
+    requests:
+      memory: "265Mi" # Bare minimum resources to run postgres
+      cpu: "250m" # Bare minimum resources to run postgres
+    limits:
+      memory: "512Mi" # Maximum resources for postgres
+      cpu: "500m"  # Maximum resources for postgres
+
+  volumeMount:
+    name: "postgres-volume"
+    path: "/data"
+  pv:
+    name: "postgres-pv"
+    hostPath: "/mnt/data"
+
+  pvClaim:
+    name: "postgres-pv-claim"
+    storageClass: "manual"
+    capacity: "25Gi"
+    accessModes:
+      - ReadWriteOnce
+
+  autoscaling: 
+    enabled: False
+  imagePullSecrets: {}
+  podAnnotations: {}
+  selectorLabels: {}
+  serviceAccountName: {}
+  podSecurityContext:
+    runAsUser: postgres

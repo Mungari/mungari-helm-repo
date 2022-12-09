@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.demo_app.fullname }}
+  labels:
+    {{- toYaml .Values.demo_app.labels | nindent 4 }}
+spec:
+  {{- if not .Values.demo_app.autoscaling.enabled }}
+  replicas: {{ .Values.demo_app.replicaCount }}
+  {{- end }}
+  {{- with .Values.demo_app.labels }}
+  selector:
+    matchLabels:
+      {{- toYaml . | nindent 6 }}
+  {{- end}}
+  template:
+    metadata:
+      {{- with .Values.demo_app.podAnnotations }}
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- toYaml .Values.demo_app.labels | nindent 8 }}
+      {{- with .Values.demo_app.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.demo_app.serviceAccountName }}
+      serviceAccountName: {{ . }}
+      {{- end }}
+      {{- with .Values.demo_app.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end}}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.demo_app.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.demo_app.image.repository }}:{{ .Values.demo_app.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.demo_app.image.pullPolicy }}
+          envFrom:
+          - configMapRef:
+              name: {{ .Values.demo_app.configMap.name }}
+          - secretRef:
+              name: {{ .Values.demo_app.secret.name }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.demo_app.service.targetPort }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.demo_app.resources | nindent 12 }}
+      {{- with .Values.demo_app.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.demo_app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.demo_app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.postgres.pvClaim.name }}
+spec:
+  storageClassName: {{ .Values.postgres.pvClaim.storageClass }}
+  accessModes: {{- toYaml .Values.postgres.pvClaim.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.pvClaim.capacity }}

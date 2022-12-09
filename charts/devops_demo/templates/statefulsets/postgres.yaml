@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.postgres.fullname }}
+  labels:
+    {{- toYaml .Values.postgres.labels | nindent 4 }}
+spec:
+  {{- if not .Values.postgres.autoscaling.enabled }}
+  replicas: {{ .Values.postgres.replicaCount }}
+  {{- end }}
+  serviceName: {{ .Values.postgres.serviceName }}
+  {{- with .Values.postgres.labels }}
+  selector:
+    matchLabels:
+      {{- toYaml . | nindent 6 }}
+  {{- end}}
+  template:
+    metadata:
+      {{- with .Values.postgres.podAnnotations }}
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- toYaml .Values.postgres.labels  | nindent 8 }}
+      {{- with .Values.postgres.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.demo_app.serviceAccountName }}
+      serviceAccountName: {{ . }}
+      {{- end }}
+      {{- with .Values.demo_app.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end}}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        {{- with .Values.demo_app.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.postgres.configMap.name }}
+        - secretRef:
+            name: {{ .Values.postgres.secret.name }}
+        ports:
+        - name: {{ .Values.postgres.fullname }}
+          containerPort: {{ .Values.postgres.service.targetPort }}
+        volumeMounts:
+        - name: {{ .Values.postgres.volumeMount.name }}
+          mountPath: {{ .Values.postgres.volumeMount.path }}
+        resources:
+          {{- toYaml .Values.postgres.resources | nindent 12 }}
+
+        {{- with .Values.postgres.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgres.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgres.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: {{ .Values.postgres.volumeMount.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.postgres.pvClaim.name }}
