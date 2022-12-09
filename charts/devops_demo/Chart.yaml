@@ -1,0 +1,6 @@
+apiVersion: v2
+name: devops-demo
+description: Helm chart to deploy the demo devops application and the postresql DB it needs to run.
+type: application
+version: 0.1.0
+appVersion: "0.0.2"

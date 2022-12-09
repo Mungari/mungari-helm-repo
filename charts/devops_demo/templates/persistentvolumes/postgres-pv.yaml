@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.postgres.pv.name }}
+  labels:
+    type: local
+spec:
+  storageClassName: {{ .Values.postgres.pvClaim.storageClass }}
+  capacity:
+    storage: {{ .Values.postgres.pvClaim.capacity }}
+  accessModes: {{- toYaml .Values.postgres.pvClaim.accessModes | nindent 4 }}
+  hostPath:
+    path: {{ .Values.postgres.pv.hostPath }}
