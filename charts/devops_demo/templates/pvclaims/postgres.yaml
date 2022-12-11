@@ -1,3 +1,4 @@
+{{- if .Values.global.db_deploy}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -9,3 +10,4 @@ spec:
   resources:
     requests:
       storage: {{ .Values.postgres.pvClaim.capacity }}
+{{- end}}

@@ -107,7 +107,33 @@
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-
+| prometheus.autoscaling.enabled | bool | `false` | Disabling autoscaling |
+| prometheus.configMap.config.name | string | `"prometheus-configs"` | ConfigMap name for prometheus |
+| prometheus.fullname | string | `"prometheus"` |  |
+| prometheus.image.pullPolicy | string | `"IfNotPresent"` |  |
+| prometheus.image.repository | string | `"prom/prometheus"` | prometheus image |
+| prometheus.image.tag | string | `"latest"` | Using latest tag |
+| prometheus.imagePullSecrets | object | `{}` |  |
+| prometheus.labels.app | string | `"prometheus"` | Label to select pod |
+| prometheus.namespace | string | `"default"` | If you're running in a different namespace or if you already have a prometheusql instance |
+| prometheus.podAnnotations | object | `{}` |  |
+| prometheus.podSecurityContext | object | `{}` |  |
+| prometheus.replicaCount | int | `1` | Default number of replicas |
+| prometheus.resources.limits.cpu | int | `1` |  |
+| prometheus.resources.limits.memory | string | `"1Gi"` |  |
+| prometheus.resources.requests.cpu | string | `"500m"` | Bare minimum resources to run postgres |
+| prometheus.resources.requests.memory | string | `"500M"` | Bare minimum resources to run prometheus |
+| prometheus.rules | string | `"groups:\n- name: Probe-HTTP\n  rules:\n  - alert: Probe-HTTP\n    expr: avg_over_time(http_server_requests_seconds_sum[10m]) > 0\n    for: 1m\n    labels:\n      severity: warning\n    annotations:\n      summary: Blackbox probe slow HTTP (instance {{ $labels.instance }})\n      description: \"HTTP request took more than 5s\\n  VALUE = {{ $value }}\\n  LABELS = {{ $labels }}\"\n"` | Rules for Prometheus, change as needed. |
+| prometheus.selectorLabels.app | string | `"prometheus"` |  |
+| prometheus.service.port | int | `9090` |  |
+| prometheus.service.targetPort | int | `9090` |  |
+| prometheus.service.type | string | `"LoadBalancer"` |  |
+| prometheus.serviceAccountName | object | `{}` |  |
+| prometheus.serviceName | string | `"prometheus"` | ServiceName for StatefulSet |
+| prometheus.volumeMount.config.name | string | `"prometheus-config"` | VolumeMount name for prometheus |
+| prometheus.volumeMount.config.path | string | `"/etc/prometheus"` | Path where vol is mounted |
+| prometheus.volumeMount.storage.name | string | `"prometheus-storage"` | VolumeMount name for prometheus |
+| prometheus.volumeMount.storage.path | string | `"/prometheus"` | Path where vol is mounted |
 <br>
 
 ## AlertManager

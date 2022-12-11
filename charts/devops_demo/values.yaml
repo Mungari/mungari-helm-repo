@@ -147,6 +147,7 @@ postgres:
     runAsUser: postgres
 
 prometheus:
+  # -- Rules for Prometheus, change as needed.
   rules: |
     groups:
     - name: Probe-HTTP

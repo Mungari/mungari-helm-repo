@@ -8,5 +8,9 @@ metadata:
 
 data:
   DB_NAME: "{{ .Values.postgres.configMap.data.db_name }}"
+  {{- if not .Values.global.db_external }}
   DB_HOST: "{{ .Values.postgres.fullname }}.{{.Values.postgres.namespace}}.svc.cluster.local"
+  {{- else }}
+  DB_HOST: "{{ .Values.global.db_external_address }}"
+  {{- end}}
   DB_PORT: "{{ .Values.postgres.service.port }}"
