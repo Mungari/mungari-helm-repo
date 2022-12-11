@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: {{ .Values.demo_app.namespace }}
   name: {{ .Values.demo_app.fullname }}
   labels:
     {{- toYaml .Values.demo_app.labels | nindent 4 }}
@@ -12,4 +13,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- toYaml .Values.demo_app.labels | nindent 4 }}
+    {{- toYaml .Values.demo_app.selectorLabels | nindent 4 }}

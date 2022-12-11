@@ -1,6 +1,8 @@
+{{- if .Values.global.db_deploy}}
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: {{ .Values.postgres.namespace }}
   name: {{ .Values.postgres.fullname }}
   labels:
     {{- toYaml .Values.postgres.labels | nindent 4 }}
@@ -12,4 +14,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- toYaml .Values.postgres.labels | nindent 4 }}
+    {{- toYaml .Values.postgres.selectorLabels | nindent 4 }}
+{{- end}}

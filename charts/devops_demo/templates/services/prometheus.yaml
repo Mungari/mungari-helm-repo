@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+      prometheus.io/scrape: 'true'
+      prometheus.io/port: "{{ .Values.prometheus.service.targetPort }}"
+  namespace: {{ .Values.prometheus.namespace }}
+  name: {{ .Values.prometheus.fullname }}
+  labels:
+    {{- toYaml .Values.prometheus.labels | nindent 4 }}
+spec:
+  type: {{ .Values.prometheus.service.type }}
+  ports:
+    - port: {{ .Values.prometheus.service.port }}
+      targetPort: {{ .Values.prometheus.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- toYaml .Values.prometheus.selectorLabels | nindent 4 }}
