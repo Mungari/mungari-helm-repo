@@ -1,11 +1,16 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  namespace: {{ .Values.demo_app.namespace }}
   name: {{ .Values.demo_app.configMap.name }}
   labels: 
   {{- toYaml .Values.demo_app.labels | nindent 4 }}
 
 data:
   DB_NAME: "{{ .Values.postgres.configMap.data.db_name }}"
-  DB_HOST: "{{ .Values.postgres.fullname }}.default.svc.cluster.local"
+  {{- if not .Values.global.db_external }}
+  DB_HOST: "{{ .Values.postgres.fullname }}.{{.Values.postgres.namespace}}.svc.cluster.local"
+  {{- else }}
+  DB_HOST: "{{ .Values.global.db_external_address }}"
+  {{- end}}
   DB_PORT: "{{ .Values.postgres.service.port }}"

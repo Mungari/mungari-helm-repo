@@ -1,6 +1,8 @@
+{{- if .Values.global.db_deploy}}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
+  namespace: {{ .Values.postgres.namespace }}
   name: {{ .Values.postgres.pv.name }}
   labels:
     type: local
@@ -11,3 +13,4 @@ spec:
   accessModes: {{- toYaml .Values.postgres.pvClaim.accessModes | nindent 4 }}
   hostPath:
     path: {{ .Values.postgres.pv.hostPath }}
+{{- end}}

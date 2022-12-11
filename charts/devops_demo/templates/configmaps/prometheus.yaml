@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: {{ .Values.prometheus.namespace }}
+  name: {{ .Values.prometheus.configMap.config.name }}
+  labels: 
+  {{- toYaml .Values.prometheus.labels | nindent 4 }}
+data:
+  prometheus.rules:
+    {{- toYaml .Values.prometheus.rules | nindent 4 }}
+  prometheus.yml: |-
+    global:
+      scrape_interval: 5s
+      evaluation_interval: 5s
+    rule_files:
+      - prometheus.rules
+    scrape_configs:
+      - job_name: "prometheus"
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['localhost:9090']
+      - job_name: "scrape_api"
+        scrape_interval: 5s
+        metrics_path: /actuator/prometheus
+        kubernetes_sd_configs:
+        - role: pod
+          selectors:
+          - role: "pod"
+            label: "app={{ .Values.demo_app.selectorLabels.app }}"

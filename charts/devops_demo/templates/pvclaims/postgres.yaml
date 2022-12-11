@@ -1,6 +1,8 @@
+{{- if .Values.global.db_deploy}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  namespace: {{ .Values.postgres.namespace }}
   name: {{ .Values.postgres.pvClaim.name }}
 spec:
   storageClassName: {{ .Values.postgres.pvClaim.storageClass }}
@@ -8,3 +10,4 @@ spec:
   resources:
     requests:
       storage: {{ .Values.postgres.pvClaim.capacity }}
+{{- end}}

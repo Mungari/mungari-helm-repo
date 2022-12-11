@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Values.prometheus.namespace }} 
+  name: {{ .Values.prometheus.fullname }}
+  labels:
+    {{- toYaml .Values.prometheus.labels | nindent 4 }}
+spec:
+  {{- if not .Values.prometheus.autoscaling.enabled }}
+  replicas: {{ .Values.prometheus.replicaCount }}
+  {{- end }}
+  {{- with .Values.prometheus.selectorLabels }}
+  selector:
+    matchLabels:
+      {{- toYaml . | nindent 6 }}
+  {{- end}}
+  template:
+    metadata:
+      labels:
+        {{- toYaml .Values.prometheus.labels | nindent 8 }}
+      {{- with .Values.prometheus.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.prometheus.serviceAccountName }}
+      serviceAccountName: {{ . }}
+      {{- end }}
+      {{- with .Values.prometheus.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end}}
+    spec:
+      containers:
+      - name: {{ .Values.prometheus.fullname }}
+        {{- with .Values.prometheus.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        image: "{{ .Values.prometheus.image.repository }}:{{ .Values.prometheus.image.tag | default .Chart.AppVersion }}"
+        args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus/"
+        ports:
+        - containerPort: {{ .Values.prometheus.service.targetPort }}
+        imagePullPolicy: {{ .Values.prometheus.image.pullPolicy }}
+        volumeMounts:
+        - name: {{ .Values.prometheus.volumeMount.config.name }}
+          mountPath: {{ .Values.prometheus.volumeMount.config.path }}
+        - name: {{ .Values.prometheus.volumeMount.storage.name }}
+          mountPath: {{ .Values.prometheus.volumeMount.storage.path }}
+        resources:
+          {{- toYaml .Values.prometheus.resources | nindent 12 }}
+      volumes:
+      - name:  {{ .Values.prometheus.volumeMount.config.name }}
+        configMap:
+          defaultMode: 420
+          name:  {{ .Values.prometheus.configMap.config.name }}
+      - name: {{ .Values.prometheus.volumeMount.storage.name }}
+        emptyDir: {}
+
+      {{- with .Values.prometheus.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.prometheus.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.prometheus.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

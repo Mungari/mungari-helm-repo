@@ -1,6 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: {{ .Values.demo_app.namespace }}
   name: {{ .Values.demo_app.fullname }}
   labels:
     {{- toYaml .Values.demo_app.labels | nindent 4 }}
@@ -8,18 +9,13 @@ spec:
   {{- if not .Values.demo_app.autoscaling.enabled }}
   replicas: {{ .Values.demo_app.replicaCount }}
   {{- end }}
-  {{- with .Values.demo_app.labels }}
+  {{- with .Values.demo_app.selectorLabels }}
   selector:
     matchLabels:
       {{- toYaml . | nindent 6 }}
   {{- end}}
   template:
     metadata:
-      {{- with .Values.demo_app.podAnnotations }}
-      annotations:
-        rollme: {{ randAlphaNum 5 | quote }}
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
         {{- toYaml .Values.demo_app.labels | nindent 8 }}
       {{- with .Values.demo_app.imagePullSecrets }}

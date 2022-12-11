@@ -1,6 +1,8 @@
+{{- if .Values.global.db_deploy }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  namespace: {{ .Values.postgres.namespace }}
   name: {{ .Values.postgres.configMap.name }}
   labels: 
   {{- toYaml .Values.postgres.labels | nindent 4 }}
@@ -8,3 +10,4 @@ metadata:
 data:
   POSTGRES_DB: "{{ .Values.postgres.configMap.data.db_name }}"
   PG_DATA: "{{ .Values.postgres.configMap.data.pg_data }}"
+{{- end}}
