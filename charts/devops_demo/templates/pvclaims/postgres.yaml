@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  namespace: {{ .Values.postgres.namespace }}
   name: {{ .Values.postgres.pvClaim.name }}
 spec:
   storageClassName: {{ .Values.postgres.pvClaim.storageClass }}

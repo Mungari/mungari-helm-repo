@@ -1,41 +1,60 @@
 # Default values for devops_demo.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
+global:
+  # -- Set to false if you already have a kubernetes instance
+  db_deploy: True
+  # -- Set to true if you have an external db connection
+  db_external: False 
+  # -- Set address if you have an external DB
+  db_external_address: "changeme"
 
 demo_app:
+  # -- Default number of replicas
   replicaCount: 3
   image:
-    repository: ghcr.io/perceptolab/devops-demo-app #DevOps demo container image
+    # -- DevOps demo container image
+    repository: ghcr.io/perceptolab/devops-demo-app
     pullPolicy: IfNotPresent
 
-  namespace: "default" # Change if you want to run in a diff. namespace
+  # -- Change if you want to run in a different namespace
+  namespace: "default"
   labels:
-    app: "demo_app" # Default label to select deployment
+    # -- Default label to select deployment
+    app: "demo_app"
   fullname: "devops-demo" 
 
   service:
-    type: LoadBalancer 
+    # -- LoadBalancer type
+    type: LoadBalancer
+    # -- Exposes on port 80 externally
     port: 80
+    # -- To port 8080
     targetPort: 8080
 
   configMap:
-    name: "demo-app-configs" # ConfigMap name for demoapp
+    # -- ConfigMap name for demoapp
+    name: "demo-app-configs"
 
   secret:
-    name: "demo-app-secrets" # Secret name demoapp
+    # -- Secret name for demoapp
+    name: "demo-app-secrets"
     
   resources:
     limits:
-      memory: "1Gi" # Change as needed
+      # -- How much memory we need
+      memory: "1Gi"
     requests:
-      memory: "1Gi" # Change as needed
+      # -- How much we request 
+      memory: "1Gi"
   
   autoscaling: 
-    enabled: False # Do not autoscale
+    enabled: False
   imagePullSecrets: {}
   podAnnotations: {}
-  selectorLabels: {}
+  # -- Select deployment
+  selectorLabels:
+    app: "demo_app"
   serviceAccountName: {}
   podSecurityContext: {}
   
@@ -43,66 +62,161 @@ demo_app:
 postgres:
   
   fullname: "postgresql-db"
-  serviceName: "postgres" # ServiceName for StatefulSet
+  # -- ServiceName for StatefulSet
+  serviceName: "postgres"
 
-  namespace: "default" # Change as needed
-  replicaCount: 1 # only one instance, as per request
+  # -- If you're running in a different namespace or if you already have a postgresql instance
+  namespace: "default"
+  # -- Default number of replicas
+  replicaCount: 1
   labels:
-    app: "postgres" # Label to select pod
+  # -- Label to select pod
+    app: "postgres"
   image:
-    repository: postgres # postgres image
-    tag: latest # using latest
+    # -- Postgres image
+    repository: postgres
+    # -- Using latest tag
+    tag: latest
     pullPolicy: IfNotPresent
 
   configMap:
-    name: "postgres-configs" # ConfigMap name for postgres
+    # -- ConfigMap name for postgres
+    name: "postgres-configs"
     data:
-      db_name: "test_db1" # What db is created, also sets demoapp DB_NAME var
-      pg_data: "/data/pgdata" # postgres data dir
+      # -- What db is created, also sets demoapp DB_NAME var
+      db_name: "test_db1"
+      # -- Postgres data dir
+      pg_data: "/data/pgdata" 
     
 
   secret:
+    # -- Secret name for postgres
     name: "postgres-secrets"
     data:
-      db_user: "dGVzdF91c2Vy" # Postgres user, also sets demoapp DB_USER
-      db_master_password: "MCZBbmI1dDBvWWpnWHZOb3hZMkw=" # Postgress pass, also sets demoapp DB_PASS
-
-  fullname: "postgresql"
+      # -- Postgres user, also sets demoapp DB_USER. B64 encoded, change if you already have a DB with the proper user
+      db_user: "dGVzdF91c2Vy"
+      # -- Postgress pass, also sets demoapp DB_PASS. B64 encoded, change if you already have a DB with the proper password
+      db_master_password: "MCZBbmI1dDBvWWpnWHZOb3hZMkw="
 
   service:
     type: NodePort
     port: 5432
     targetPort: 5432
 
-  volumeMount:
-    name: "postgres-db_vol" # VolumeMount to persist database data, change as needed
   resources:
     requests:
-      memory: "265Mi" # Bare minimum resources to run postgres
-      cpu: "250m" # Bare minimum resources to run postgres
+      # -- Bare minimum resources to run postgres
+      memory: "265Mi"
+      # -- Bare minimum resources to run postgres
+      cpu: "250m"
     limits:
-      memory: "512Mi" # Maximum resources for postgres
-      cpu: "500m"  # Maximum resources for postgres
+      memory: "512Mi"
+      cpu: "500m"
 
   volumeMount:
+    # -- VolumeMount name for postgres
     name: "postgres-volume"
+    # -- Path where vol is mounted
     path: "/data"
   pv:
+    # -- Pv definition for postgres
     name: "postgres-pv"
+    # -- Where we're saving the data on the host
     hostPath: "/mnt/data"
 
   pvClaim:
+    # -- PvClaim for postgres
     name: "postgres-pv-claim"
+    # -- StorageClass, change as needed. Also sets postgres.pv.storageClass
     storageClass: "manual"
+    # -- Capacity, change as needed. Also sets postgres.pv.capacity
     capacity: "25Gi"
+    # -- AccessModes, change as needed. Also sets postgres.pv.accessModes
     accessModes:
       - ReadWriteOnce
 
   autoscaling: 
+    # -- Disabling autoscaling
     enabled: False
   imagePullSecrets: {}
   podAnnotations: {}
-  selectorLabels: {}
+  selectorLabels:
+    app: "postgres"
   serviceAccountName: {}
   podSecurityContext:
     runAsUser: postgres
+
+prometheus:
+  rules: |
+    groups:
+    - name: Probe-HTTP
+      rules:
+      - alert: Probe-HTTP
+        expr: avg_over_time(http_server_requests_seconds_sum[10m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: Blackbox probe slow HTTP (instance {{ $labels.instance }})
+          description: "HTTP request took more than 5s\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+  fullname: "prometheus"
+  # -- ServiceName for StatefulSet
+  serviceName: "prometheus"
+
+  # -- If you're running in a different namespace or if you already have a prometheusql instance
+  namespace: "default"
+  # -- Default number of replicas
+  replicaCount: 1
+  labels:
+  # -- Label to select pod
+    app: "prometheus"
+  image:
+    # -- prometheus image
+    repository: prom/prometheus
+    # -- Using latest tag
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  configMap:
+    config:
+    # -- ConfigMap name for prometheus
+      name: "prometheus-configs"
+
+  service:
+    type: LoadBalancer
+    port: 9090
+    targetPort: 9090
+
+  resources:
+    requests:
+      # -- Bare minimum resources to run prometheus
+      memory: "500M"
+      # -- Bare minimum resources to run postgres
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: 1
+
+  volumeMount:
+    config:
+      # -- VolumeMount name for prometheus
+      name: "prometheus-config"
+      # -- Path where vol is mounted
+      path: "/etc/prometheus"
+    storage:
+      # -- VolumeMount name for prometheus
+      name: "prometheus-storage"
+      # -- Path where vol is mounted
+      path: "/prometheus"
+
+  autoscaling: 
+    # -- Disabling autoscaling
+    enabled: False
+  imagePullSecrets: {}
+  podAnnotations: {}
+  selectorLabels:
+    app: "prometheus"
+  serviceAccountName: {}
+  podSecurityContext: {}
+alertmanager:

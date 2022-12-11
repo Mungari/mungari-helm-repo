@@ -1,6 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
+  namespace: {{ .Values.postgres.namespace }}
   name: {{ .Values.postgres.fullname }}
   labels:
     {{- toYaml .Values.postgres.labels | nindent 4 }}
@@ -9,18 +10,13 @@ spec:
   replicas: {{ .Values.postgres.replicaCount }}
   {{- end }}
   serviceName: {{ .Values.postgres.serviceName }}
-  {{- with .Values.postgres.labels }}
+  {{- with .Values.postgres.selectorLabels }}
   selector:
     matchLabels:
       {{- toYaml . | nindent 6 }}
   {{- end}}
   template:
     metadata:
-      {{- with .Values.postgres.podAnnotations }}
-      annotations:
-        rollme: {{ randAlphaNum 5 | quote }}
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
         {{- toYaml .Values.postgres.labels  | nindent 8 }}
       {{- with .Values.postgres.imagePullSecrets }}

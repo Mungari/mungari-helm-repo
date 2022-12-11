@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
+  namespace: {{ .Values.postgres.namespace }}
   name: {{ .Values.postgres.pv.name }}
   labels:
     type: local
