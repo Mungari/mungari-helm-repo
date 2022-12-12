@@ -10,7 +10,7 @@
 
 # Prerequisites
 
-1. Kubernetes version 1.25.2
+1. Kubernetes version 1.25.2 (1.24 works as well)
 2. Helm 3.10.2
 3. Container Network Interface
 4. A loadbalancer service (if using minikube run `minikube tunnel`)
