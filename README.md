@@ -7,7 +7,7 @@ Personal repository hosting helm charts
 
 | Name        | Version | ArtifactHub link                                                            | Supported ubernetes version | Helm version |
 |-------------|---------|-----------------------------------------------------------------------------|-----------------------------|--------------|
-| devops-demo | 0.1.3  | https://artifacthub.io/packages/helm/mungari-development-charts/devops-demo | 1.25.2                      | 3.10.2       |
+| devops-demo | 0.1.5  | https://artifacthub.io/packages/helm/mungari-development-charts/devops-demo | 1.25.2                      | 3.10.2       |
 
 # How to install
 

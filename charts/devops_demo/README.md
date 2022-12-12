@@ -14,7 +14,7 @@
 2. Helm 3.10.2
 3. Container Network Interface
 4. A loadbalancer service (if using minikube run `minikube tunnel`)
-5. A slack app with permission to post in a channel. Follow this guide https://slack.com/help/articles/115005265063-Incoming-webhooks-for-Slack
+5. A slack app with permission to post in a channel (defaults to `#alerting`, to change channel set `alertmanager.configMap.config.slack.channel` to your custom channel). Follow this guide https://slack.com/help/articles/115005265063-Incoming-webhooks-for-Slack
 
 # What the Chart will install
 
@@ -148,7 +148,7 @@
 | alertmanager.configMap.config.slack.group_by | string | `"['alertname', 'priority']"` | Filters |
 | alertmanager.configMap.config.slack.name | string | `"slack"` | Receiver name |
 | alertmanager.configMap.config.slack.repeat_interval | string | `"2m"` | How long to resend message if alert still up |
-| alertmanager.configMap.config.slack.url_endpoint | string | `"https://hooks.slack.com/services/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"` | Slack hook url |
+| alertmanager.configMap.config.slack.url_endpoint | string | `"CHANGEME"` | Slack hook url, add your own |
 | alertmanager.configMap.config.slack.wait | string | `"10s"` | How long to wait before alerting |
 | alertmanager.configMap.template.name | string | `"alerting-template"` |  |
 | alertmanager.fullname | string | `"alertmanager"` |  |
