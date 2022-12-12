@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Values.alertmanager.namespace }} 
+  name: {{ .Values.alertmanager.fullname }}
+  labels:
+    {{- toYaml .Values.alertmanager.labels | nindent 4 }}
+spec:
+  {{- if not .Values.alertmanager.autoscaling.enabled }}
+  replicas: {{ .Values.alertmanager.replicaCount }}
+  {{- end }}
+  {{- with .Values.alertmanager.selectorLabels }}
+  selector:
+    matchLabels:
+      {{- toYaml . | nindent 6 }}
+  {{- end}}
+  template:
+    metadata:
+      labels:
+        {{- toYaml .Values.alertmanager.labels | nindent 8 }}
+      {{- with .Values.alertmanager.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.alertmanager.serviceAccountName }}
+      serviceAccountName: {{ . }}
+      {{- end }}
+      {{- with .Values.alertmanager.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end}}
+    spec:
+      containers:
+      - name: {{ .Values.alertmanager.fullname }}
+        {{- with .Values.alertmanager.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        image: "{{ .Values.alertmanager.image.repository }}:{{ .Values.alertmanager.image.tag | default .Chart.AppVersion }}"
+        args:
+          - "--config.file={{ .Values.alertmanager.volumeMount.config.path }}/config.yml"
+          - "--storage.path={{ .Values.alertmanager.volumeMount.storage.path }}"
+        ports:
+        - containerPort: {{ .Values.alertmanager.service.targetPort }}
+        imagePullPolicy: {{ .Values.alertmanager.image.pullPolicy }}
+        volumeMounts:
+        - name: {{ .Values.alertmanager.volumeMount.config.name }}
+          mountPath: {{ .Values.alertmanager.volumeMount.config.path }}
+        - name: {{ .Values.alertmanager.volumeMount.storage.name }}
+          mountPath: {{ .Values.alertmanager.volumeMount.storage.path }}
+        - name: {{ .Values.alertmanager.volumeMount.template.name }}
+          mountPath: {{ .Values.alertmanager.volumeMount.template.path }}
+        resources:
+          {{- toYaml .Values.alertmanager.resources | nindent 12 }}
+      volumes:
+      - name:  {{ .Values.alertmanager.volumeMount.config.name }}
+        configMap:
+          defaultMode: 420
+          name:  {{ .Values.alertmanager.configMap.config.name }}
+      - name:  {{ .Values.alertmanager.volumeMount.template.name }}
+        configMap:
+          name:  {{ .Values.alertmanager.configMap.template.name }}
+      - name: {{ .Values.alertmanager.volumeMount.storage.name }}
+        emptyDir: {}
+
+      {{- with .Values.alertmanager.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.alertmanager.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.alertmanager.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

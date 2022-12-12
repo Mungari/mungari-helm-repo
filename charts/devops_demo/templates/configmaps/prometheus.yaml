@@ -6,14 +6,31 @@ metadata:
   labels: 
   {{- toYaml .Values.prometheus.labels | nindent 4 }}
 data:
-  prometheus.rules:
-    {{- toYaml .Values.prometheus.rules | nindent 4 }}
+  prometheus.rules: |-
+    groups:
+    - name: Probe-HTTP
+      rules:
+      - alert: Probe-HTTP
+        expr: avg_over_time(http_server_requests_seconds_sum[10m]) > {{ .Values.prometheus.configMap.config.alert_threshold}}
+        for: {{ .Values.prometheus.configMap.config.alert_fires }}
+        labels:
+          severity: critical
+        annotations:
+          summary: slow HTTP
+          description: "HTTP requests on average took more than {{ .Values.prometheus.configMap.config.alert_threshold}}s"
   prometheus.yml: |-
     global:
       scrape_interval: 5s
       evaluation_interval: 5s
     rule_files:
       - prometheus.rules
+    alerting:
+      alertmanagers:
+        - kubernetes_sd_configs:
+          - role: service
+            selectors:
+            - role: "service"
+              label: "app={{ .Values.alertmanager.selectorLabels.app }}" 
     scrape_configs:
       - job_name: "prometheus"
         scrape_interval: 5s
