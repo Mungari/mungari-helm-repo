@@ -21,4 +21,4 @@ Personal repository hosting helm charts
     ```bash
     helm install -f myvalues.yaml chart-name myrepo/chart-name  
     ```
-    populate myvalues.yaml according to the helm chart README.md file
+    populate myvalues.yaml according to the helm chart README.md file (you can find it either on artifact hub if it has updated -takes a while- or under charts/chart-name )
