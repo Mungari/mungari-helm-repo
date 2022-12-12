@@ -3,6 +3,17 @@ entries:
   devops-demo:
   - apiVersion: v2
     appVersion: 0.0.2
+    created: "2022-12-12T12:07:07.814941186Z"
+    description: Helm chart to deploy the demo devops application and the postresql
+      DB it needs to run. Modify values as needed.
+    digest: 9efe3508614c941c0dc43975bb965b6bc99d7d87772ff8635c8a781224bd9f34
+    name: devops-demo
+    type: application
+    urls:
+    - https://github.com/Mungari/mungari-helm-repo/releases/download/devops-demo-0.1.4/devops-demo-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v2
+    appVersion: 0.0.2
     created: "2022-12-11T17:09:55.698340151Z"
     description: Helm chart to deploy the demo devops application and the postresql
       DB it needs to run. Modify values as needed.
@@ -23,4 +34,4 @@ entries:
     urls:
     - https://github.com/Mungari/mungari-helm-repo/releases/download/devops-demo-0.1.2/devops-demo-0.1.2.tgz
     version: 0.1.2
-generated: "2022-12-11T17:09:55.698346051Z"
+generated: "2022-12-12T12:07:07.814953286Z"
