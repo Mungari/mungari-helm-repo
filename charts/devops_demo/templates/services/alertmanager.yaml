@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+      alertmanager.io/scrape: 'true'
+      alertmanager.io/port: "{{ .Values.alertmanager.service.targetPort }}"
+  namespace: {{ .Values.alertmanager.namespace }}
+  name: {{ .Values.alertmanager.fullname }}
+  labels:
+    {{- toYaml .Values.alertmanager.labels | nindent 4 }}
+spec:
+  type: {{ .Values.alertmanager.service.type }}
+  ports:
+    - port: {{ .Values.alertmanager.service.port }}
+      targetPort: {{ .Values.alertmanager.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- toYaml .Values.alertmanager.selectorLabels | nindent 4 }}

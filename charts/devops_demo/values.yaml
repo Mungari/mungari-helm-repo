@@ -9,6 +9,7 @@ global:
   # -- Set address if you have an external DB
   db_external_address: "changeme"
 
+
 demo_app:
   # -- Default number of replicas
   replicaCount: 3
@@ -146,24 +147,9 @@ postgres:
   podSecurityContext:
     runAsUser: postgres
 
+#### PROMETHEUS CONFIG ####
 prometheus:
-  # -- Rules for Prometheus, change as needed.
-  rules: |
-    groups:
-    - name: Probe-HTTP
-      rules:
-      - alert: Probe-HTTP
-        expr: avg_over_time(http_server_requests_seconds_sum[10m]) > 0
-        for: 1m
-        labels:
-          severity: warning
-        annotations:
-          summary: Blackbox probe slow HTTP (instance {{ $labels.instance }})
-          description: "HTTP request took more than 5s\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
-
   fullname: "prometheus"
-  # -- ServiceName for StatefulSet
-  serviceName: "prometheus"
 
   # -- If you're running in a different namespace or if you already have a prometheusql instance
   namespace: "default"
@@ -181,8 +167,12 @@ prometheus:
 
   configMap:
     config:
-    # -- ConfigMap name for prometheus
+      # -- ConfigMap name for prometheus
       name: "prometheus-configs"
+      # -- Set timeout for alert, defaults to 0 to showcase alerting
+      alert_threshold: 0
+      # -- Set after how long the alert will fire, default to 1m
+      alert_fires: "1m"
 
   service:
     type: LoadBalancer
@@ -193,7 +183,7 @@ prometheus:
     requests:
       # -- Bare minimum resources to run prometheus
       memory: "500M"
-      # -- Bare minimum resources to run postgres
+      # -- Bare minimum resources to run prometheus
       cpu: "500m"
     limits:
       memory: "1Gi"
@@ -220,4 +210,85 @@ prometheus:
     app: "prometheus"
   serviceAccountName: {}
   podSecurityContext: {}
+
+
 alertmanager:
+  fullname: "alertmanager"
+
+  # -- If you're running in a different namespace
+  namespace: "default"
+  # -- Default number of replicas
+  replicaCount: 1
+  labels:
+  # -- Label to select pod
+    app: "alertmanager"
+  image:
+    # -- alertmanager image
+    repository: prom/alertmanager
+    # -- Using latest tag
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  configMap:
+    config:
+      name: "alertmanager-configs"
+    # -- ConfigMap name for alertmanager
+      slack: 
+        # -- Receiver name
+        name: "slack"
+        # -- Filters
+        group_by: "['alertname', 'priority']"
+        # -- How long to wait before alerting
+        wait: "10s"
+        # -- How long to resend message if alert still up
+        repeat_interval: "2m"
+        # -- Slack hook url
+        url_endpoint: "https://hooks.slack.com/services/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"
+        # -- Slack channel
+        channel: "#alerting"
+    template:
+      name: "alerting-template"
+
+
+
+  service:
+    type: NodePort
+    port: 9093
+    targetPort: 9093
+
+  resources:
+    requests:
+      # -- Bare minimum resources to run alertmanager
+      memory: "500M"
+      # -- Bare minimum resources to run alertmanager
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: 1
+
+  volumeMount:
+    config:
+      # -- VolumeMount name for alertmanager
+      name: "alertmanager-config"
+      # -- Path where vol is mounted
+      path: "/etc/alertmanager"
+    storage:
+      # -- VolumeMount name for alertmanager storage
+      name: "alertmanager-storage"
+      # -- Path where vol is mounted
+      path: "/alertmanager"
+    template:
+      # -- VolueMount name for alertmanager templates
+      name: "alertmanager-template"
+      path: "/etc/alertmanager-templates"
+
+
+  autoscaling: 
+    # -- Disabling autoscaling
+    enabled: False
+  imagePullSecrets: {}
+  podAnnotations: {}
+  selectorLabels:
+    app: "alertmanager"
+  serviceAccountName: {}
+  podSecurityContext: {}
