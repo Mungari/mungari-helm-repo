@@ -4,8 +4,8 @@
 replicaCount: 1
 
 image:
-  repository: myregistry.azurecr.io/django-app
-  tag: "1.2.0"
+  repository: ghcr.io/mungari/django-app
+  tag: "multi-arch"
 
 appConfig:
   accentColor: "#f59e0b"
