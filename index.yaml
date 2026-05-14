@@ -3,6 +3,17 @@ entries:
   devops-demo:
   - apiVersion: v2
     appVersion: 0.0.2
+    created: "2026-05-14T10:53:32.918986561Z"
+    description: Helm chart to deploy the demo devops application and the postresql
+      DB it needs to run. Modify values as needed.
+    digest: 6fc4431b30a3fde87c6173c56641c1bf435f9ff69bb8e7e5abfc23ba48976489
+    name: devops-demo
+    type: application
+    urls:
+    - https://github.com/Mungari/mungari-helm-repo/releases/download/devops-demo-1.0.1/devops-demo-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: 0.0.2
     created: "2022-12-12T13:00:10.88186028Z"
     description: Helm chart to deploy the demo devops application and the postresql
       DB it needs to run. Modify values as needed.
@@ -56,4 +67,21 @@ entries:
     urls:
     - https://github.com/Mungari/mungari-helm-repo/releases/download/devops-demo-0.1.2/devops-demo-0.1.2.tgz
     version: 0.1.2
-generated: "2022-12-12T13:00:10.88188378Z"
+  django-app:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-05-14T10:53:33.089517896Z"
+    description: A container-aware Django application chart
+    digest: e616431a6415acb7dcb339e61b30494272aaca32caa130ed4a3ca2f9044d8d01
+    keywords:
+    - django
+    - python
+    - web
+    maintainers:
+    - name: platform-team
+    name: django-app
+    type: application
+    urls:
+    - https://github.com/Mungari/mungari-helm-repo/releases/download/django-app-0.1.0/django-app-0.1.0.tgz
+    version: 0.1.0
+generated: "2026-05-14T10:53:33.089540099Z"
