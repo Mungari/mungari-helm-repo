@@ -4,9 +4,8 @@
 replicaCount: 3
 
 image:
-  repository: myregistry.azurecr.io/django-app
-  tag: "1.2.0"
-  pullPolicy: Always
+  repository: ghcr.io/mungari/django-app
+  tag: "multi-arch"
 
 imagePullSecrets:
   - name: acr-pull-secret
