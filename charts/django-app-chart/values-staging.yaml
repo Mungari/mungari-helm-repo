@@ -24,11 +24,11 @@ env:
         key: secretKey
 
 apisix:
-  enabled: true
+  enabled: false
   host: "django-app.staging.example.com"
   pathPrefix: "/"
   tls:
-    enabled: true
+    enabled: false
     secretName: "django-app-staging-tls"
 
 azureLoadBalancer:
