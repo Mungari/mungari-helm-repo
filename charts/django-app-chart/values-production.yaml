@@ -1,0 +1,89 @@
+# examples/values-production.yaml
+# helm upgrade --install django-app ./django-app-chart -f examples/values-production.yaml
+
+replicaCount: 3
+
+image:
+  repository: ghcr.io/mungari/django-app
+  tag: "multi-arch"
+
+imagePullSecrets:
+  - name: acr-pull-secret
+
+appConfig:
+  accentColor: "#00c8a0"
+  message: "Production — all systems go."
+  appName: "ContainerApp"
+  environment: "production"
+  version: "1.2.0"
+
+env:
+  - name: DEBUG
+    value: "False"
+  - name: SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: django-secrets
+        key: secretKey
+
+# ── APISIX ──────────────────────────────────────────────────────────────────
+apisix:
+  enabled: true
+  host: "django-app.example.com"
+  pathPrefix: "/"
+  tls:
+    enabled: true
+    secretName: "django-app-prod-tls"
+  plugins:
+    - name: limit-req
+      enable: true
+      config:
+        rate: 200
+        burst: 100
+        key: "remote_addr"
+    - name: response-rewrite
+      enable: true
+      config:
+        headers:
+          X-Powered-By: "APISIX"
+
+# ── Azure Load Balancer ──────────────────────────────────────────────────────
+azureLoadBalancer:
+  enabled: true
+  backendPoolName: "django-app-prod-pool"
+  loadBalancerName: "aks-prod-lb"
+  resourceGroup: "rg-aks-prod"
+  nodeSelector:
+    agentpool: "appnodes"
+  servicePort: 80
+  protocol: TCP
+
+# ── HPA ─────────────────────────────────────────────────────────────────────
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 15
+  targetCPUUtilizationPercentage: 65
+  targetMemoryUtilizationPercentage: 80
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "1000m"
+    memory: "512Mi"
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8000"
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: django-app
+          topologyKey: kubernetes.io/hostname
