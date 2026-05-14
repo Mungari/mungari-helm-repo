@@ -1,0 +1,46 @@
+# examples/values-staging.yaml
+# helm upgrade --install django-app ./django-app-chart -f examples/values-staging.yaml
+
+replicaCount: 1
+
+image:
+  repository: myregistry.azurecr.io/django-app
+  tag: "1.2.0"
+
+appConfig:
+  accentColor: "#f59e0b"
+  message: "Staging — here be dragons 🐉"
+  appName: "ContainerApp"
+  environment: "staging"
+  version: "1.2.0"
+
+env:
+  - name: DEBUG
+    value: "True"
+  - name: SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: django-secrets
+        key: secretKey
+
+apisix:
+  enabled: true
+  host: "django-app.staging.example.com"
+  pathPrefix: "/"
+  tls:
+    enabled: true
+    secretName: "django-app-staging-tls"
+
+azureLoadBalancer:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "64Mi"
+  limits:
+    cpu: "200m"
+    memory: "128Mi"
